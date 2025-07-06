@@ -26,7 +26,8 @@ app.use(cors({
 }));
 
 // Serve static files from the React app build directory
-app.use(express.static(path.join(__dirname, 'public')));
+// __dirname will be /usr/src/app/backend, so we go up one level for the 'public' folder
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Function to initialize database tables
 async function initializeDatabase() {
@@ -365,7 +366,8 @@ app.put('/api/user/nickname', isAuthenticated, async (req, res) => {
 // Make sure this is after all your API routes
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api/')) { // Do not serve index.html for API calls
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    // __dirname will be /usr/src/app/backend, so we go up one level for the 'public' folder
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
   } else {
     // If it's an API call that wasn't caught by other routes, it's a 404
     res.status(404).send('API endpoint not found');

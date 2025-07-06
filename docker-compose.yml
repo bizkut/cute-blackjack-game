@@ -8,17 +8,12 @@ services:
     ports:
       - "3001:3001" # Exposes port 3001 on the host to port 3001 on the container
     volumes:
-      # For backend development, mount only the backend code.
-      # The frontend is built into the image; for frontend live-reloading,
-      # you'd run the frontend dev server separately.
-      - ./backend:/usr/src/app
-      # Note: node_modules inside the container for the backend should not be overwritten
-      # by a host volume if they were installed during the image build.
-      # The Dockerfile already copies backend and installs dependencies.
-      # This volume mount will overlay the app code, but node_modules from build will be used.
-      # For production, you generally don't mount source code volumes.
-      - /usr/src/app/node_modules # Keeps container's node_modules for backend
-      # We no longer need to mount /usr/src/app/public as it's built into the image.
+      # Mount the backend source code for development.
+      # The path /usr/src/app/backend is where the backend code lives inside the container.
+      - ./backend:/usr/src/app/backend
+      # Exclude node_modules from being overwritten by the host volume,
+      # so the container uses the node_modules installed during the image build.
+      - /usr/src/app/backend/node_modules
     depends_on:
       db:
         condition: service_healthy # Wait for db to be healthy
