@@ -10,7 +10,7 @@ COPY package.json yarn.lock ./
 # COPY vite.config.ts tsconfig.json tsconfig.node.json ./
 
 # Install frontend dependencies
-RUN yarn install --frozen-lockfile
+RUN yarn install # Changed from --frozen-lockfile to allow lockfile update during build
 
 # Copy the rest of the frontend application code
 # This includes src/, public/ (Vite's public asset folder), index.html, vite.config.ts etc.
