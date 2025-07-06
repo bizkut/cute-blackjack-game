@@ -1,15 +1,52 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, Dispatch, SetStateAction } from 'react';
 import { ethers } from 'ethers'; // For Metamask interaction
 import * as api from '../services/apiService';
 
-const AuthContext = createContext(null);
+// Define types for the user and high score
+interface HighScore {
+  score: number;
+  achieved_at: string;
+}
 
-export const useAuth = () => useContext(AuthContext);
+export interface User {
+  id: number;
+  ethereum_address: string;
+  nickname: string | null;
+  created_at: string;
+  high_score: HighScore | null;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Initial loading state
-  const [error, setError] = useState('');
+// Define the shape of the context value
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string;
+  loginWithMetamask: () => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
+  setError: Dispatch<SetStateAction<string>>;
+}
+
+// Create context with a default value (can be null or a more specific default shape)
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true); // Initial loading state
+  const [error, setError] = useState<string>('');
 
   // Check auth status on initial load
   useEffect(() => {
@@ -75,9 +112,9 @@ export const AuthProvider = ({ children }) => {
         setError(verifyData.error || "Login failed after verification.");
         setUser(null);
       }
-    } catch (err) {
+    } catch (err: any) { // Explicitly type err or handle as unknown
       console.error("MetaMask login error:", err);
-      setError(err.error || err.message || "An error occurred during MetaMask login.");
+      setError(err?.error || err?.message || "An error occurred during MetaMask login.");
       setUser(null);
     } finally {
       setLoading(false);
@@ -90,9 +127,9 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.logoutUser();
       setUser(null);
-    } catch (err) {
+    } catch (err: any) { // Explicitly type err
       console.error("Logout error:", err);
-      setError(err.message || "Logout failed.");
+      setError(err?.message || "Logout failed.");
     } finally {
       setLoading(false);
     }
@@ -105,10 +142,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const profile = await api.getUserProfile();
       setUser(profile);
-    } catch (err) {
+    } catch (err: any) { // Explicitly type err
       console.error("Error refreshing user profile:", err);
       // Optionally handle error, e.g., by logging out if profile fetch fails critically
-      // setError("Could not refresh user data.");
+      // setError(err?.message || "Could not refresh user data.");
     } finally {
       setLoading(false);
     }
