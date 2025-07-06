@@ -9,7 +9,8 @@ services:
       - ./backend:/usr/src/app # Mounts the backend directory for live code changes
       - /usr/src/app/node_modules # Excludes node_modules from being overwritten by the host volume
     depends_on:
-      - db
+      db:
+        condition: service_healthy # Wait for db to be healthy
     environment:
       MYSQL_HOST: db
       MYSQL_USER: user # Replace with your desired user
@@ -30,6 +31,12 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql # Persists database data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u$${MYSQL_USER}", "-p$${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s # Give MySQL time to initialize before first health check
 
 volumes:
   mysql_data: # Defines the named volume for data persistence
