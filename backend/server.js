@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // IMPORTANT: Restrict this in production to your actual frontend domain!
 const frontendURL = process.env.NODE_ENV === 'production'
                     ? process.env.FRONTEND_PROD_URL // e.g., https://your-blackjack-game.com
-                    : 'http://localhost:3000'; // Default React dev port
+                    : 'http://localhost:3001'; // Changed to 3001 as app is served from here
 
 app.use(cors({
   origin: frontendURL, // Allow only your frontend to make requests
