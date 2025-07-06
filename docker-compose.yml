@@ -21,7 +21,7 @@ services:
   db:
     image: mysql:8.0-debian # Using a specific MySQL version
     ports:
-      - "3306:3306" # Exposes MySQL default port
+      - "3307:3306" # Exposes MySQL default port on host 3307, container port 3306
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword # Replace with a strong root password
       MYSQL_DATABASE: blackjack_db # Same as above
