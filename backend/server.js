@@ -5,6 +5,7 @@ const { ethers } = require('ethers'); // For signature verification
 const crypto = require('crypto'); // For generating a secure random nonce
 const dbPool = require('./db'); // Import the database connection pool
 const cors = require('cors'); // Import CORS middleware
+const path = require('path'); // Import path module
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -23,6 +24,9 @@ app.use(cors({
   origin: frontendURL, // Allow only your frontend to make requests
   credentials: true    // Allow cookies to be sent (for session management)
 }));
+
+// Serve static files from the React app build directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Function to initialize database tables
 async function initializeDatabase() {
@@ -356,13 +360,17 @@ app.put('/api/user/nickname', isAuthenticated, async (req, res) => {
 });
 
 
-// Basic route
-app.get('/', (req, res) => {
-  res.send('Blackjack Backend Server Running with Auth Routes and Score Endpoints!');
+// API routes should be defined above this
+// Catch-all route to serve index.html for client-side routing (React Router)
+// Make sure this is after all your API routes
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api/')) { // Do not serve index.html for API calls
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } else {
+    // If it's an API call that wasn't caught by other routes, it's a 404
+    res.status(404).send('API endpoint not found');
+  }
 });
-
-// Placeholder for future API routes for game logic (scores, etc.)
-// app.use('/api', require('./routes/api')); // We will create this later
 
 async function startServer() {
   await initializeDatabase(); // Ensure tables are created before server starts listening

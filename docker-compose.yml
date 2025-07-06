@@ -2,12 +2,23 @@ version: '3.8'
 
 services:
   app:
-    build: ./backend
+    build:
+      context: . # Build context is now the project root
+      dockerfile: Dockerfile # Explicitly specify the Dockerfile name if it's standard
     ports:
       - "3001:3001" # Exposes port 3001 on the host to port 3001 on the container
     volumes:
-      - ./backend:/usr/src/app # Mounts the backend directory for live code changes
-      - /usr/src/app/node_modules # Excludes node_modules from being overwritten by the host volume
+      # For backend development, mount only the backend code.
+      # The frontend is built into the image; for frontend live-reloading,
+      # you'd run the frontend dev server separately.
+      - ./backend:/usr/src/app
+      # Note: node_modules inside the container for the backend should not be overwritten
+      # by a host volume if they were installed during the image build.
+      # The Dockerfile already copies backend and installs dependencies.
+      # This volume mount will overlay the app code, but node_modules from build will be used.
+      # For production, you generally don't mount source code volumes.
+      - /usr/src/app/node_modules # Keeps container's node_modules for backend
+      # We no longer need to mount /usr/src/app/public as it's built into the image.
     depends_on:
       db:
         condition: service_healthy # Wait for db to be healthy
