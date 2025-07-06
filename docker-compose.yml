@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    build: ./backend
+    ports:
+      - "3001:3001" # Exposes port 3001 on the host to port 3001 on the container
+    volumes:
+      - ./backend:/usr/src/app # Mounts the backend directory for live code changes
+      - /usr/src/app/node_modules # Excludes node_modules from being overwritten by the host volume
+    depends_on:
+      - db
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: user # Replace with your desired user
+      MYSQL_PASSWORD: password # Replace with your desired password
+      MYSQL_DATABASE: blackjack_db # Replace with your desired database name
+      NODE_ENV: development
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0-debian # Using a specific MySQL version
+    ports:
+      - "3306:3306" # Exposes MySQL default port
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Replace with a strong root password
+      MYSQL_DATABASE: blackjack_db # Same as above
+      MYSQL_USER: user # Same as above
+      MYSQL_PASSWORD: password # Same as above
+    volumes:
+      - mysql_data:/var/lib/mysql # Persists database data
+    restart: unless-stopped
+
+volumes:
+  mysql_data: # Defines the named volume for data persistence
